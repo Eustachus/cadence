@@ -23,8 +23,11 @@ export async function loginAction(values: {
       password,
       redirectTo: "/dashboard",
     });
-    return { success: true };
   } catch (error) {
+    // Check if this is a NextAuth redirect (which is expected)
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error; // Re-throw redirect errors
+    }
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
@@ -33,6 +36,7 @@ export async function loginAction(values: {
           return { error: "Something went wrong" };
       }
     }
+    // Re-throw other errors (including NEXT_REDIRECT)
     throw error;
   }
 }
@@ -70,8 +74,10 @@ export async function registerAction(values: {
       password,
       redirectTo: "/dashboard",
     });
-    return { success: true };
   } catch (error) {
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error;
+    }
     if (error instanceof AuthError) {
       return { error: "Something went wrong" };
     }
