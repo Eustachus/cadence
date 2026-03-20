@@ -2,9 +2,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// PostgreSQL for production (Vercel + Supabase/Neon)
+// SQLite for local development
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -57,12 +57,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -115,15 +115,15 @@ model Organization {
 }
 
 model Membership {
-  id             String     @id @default(cuid())
-  role           MemberRole @default(MEMBER)
+  id             String    @id @default(cuid())
+  role           String    @default("MEMBER")
   userId         String
   organizationId String
   invitedEmail   String?
-  inviteToken    String?    @unique
+  inviteToken    String?   @unique
   inviteExpires  DateTime?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -133,13 +133,6 @@ model Membership {
 
   @@unique([userId, organizationId])
   @@index([organizationId])
-}
-
-enum MemberRole {
-  OWNER
-  ADMIN
-  MEMBER
-  VIEWER
 }
 
 model Team {
@@ -160,7 +153,7 @@ model Team {
 
 model TeamMember {
   id        String   @id @default(cuid())
-  role      TeamRole @default(MEMBER)
+  role      String   @default("MEMBER")
   teamId    String
   memberId  String
   createdAt DateTime @default(now())
@@ -171,34 +164,28 @@ model TeamMember {
   @@unique([teamId, memberId])
 }
 
-enum TeamRole {
-  ADMIN
-  MEMBER
-  OBSERVER
-}
-
 // ─────────────────────────────────────────────
 // PROJECTS
 // ─────────────────────────────────────────────
 
 model Project {
-  id             String        @id @default(cuid())
+  id             String    @id @default(cuid())
   name           String
-  description    String?       @db.Text
+  description    String?
   icon           String?
-  color          String        @default("#6366f1")
-  status         ProjectStatus @default(ON_TRACK)
-  isPublic       Boolean       @default(true)
-  isFavorite     Boolean       @default(false)
-  isPinned       Boolean       @default(false)
-  isArchived     Boolean       @default(false)
+  color          String    @default("#6366f1")
+  status         String    @default("ON_TRACK")
+  isPublic       Boolean   @default(true)
+  isFavorite     Boolean   @default(false)
+  isPinned       Boolean   @default(false)
+  isArchived     Boolean   @default(false)
   startDate      DateTime?
   endDate        DateTime?
   organizationId String
   teamId         String?
   createdBy      String
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   team         Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
@@ -211,14 +198,6 @@ model Project {
 
   @@index([organizationId])
   @@index([status])
-}
-
-enum ProjectStatus {
-  ON_TRACK
-  AT_RISK
-  OFF_TRACK
-  ON_HOLD
-  COMPLETE
 }
 
 model Section {
@@ -240,17 +219,17 @@ model Section {
 // ─────────────────────────────────────────────
 
 model Task {
-  id             String       @id @default(cuid())
+  id             String    @id @default(cuid())
   title          String
-  description    String?      @db.Text
-  status         TaskStatus   @default(TODO)
-  priority       TaskPriority @default(NONE)
-  position       Float        @default(0)
+  description    String?
+  status         String    @default("TODO")
+  priority       String    @default("NONE")
+  position       Float     @default(0)
   dueDate        DateTime?
   startDate      DateTime?
   completedAt    DateTime?
-  isArchived     Boolean      @default(false)
-  isMilestone    Boolean      @default(false)
+  isArchived     Boolean   @default(false)
+  isMilestone    Boolean   @default(false)
   estimatedHours Float?
   storyPoints    Int?
   organizationId String
@@ -258,8 +237,8 @@ model Task {
   sectionId      String?
   parentTaskId   String?
   createdBy      String
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -280,23 +259,6 @@ model Task {
   @@index([status])
   @@index([priority])
   @@index([parentTaskId])
-}
-
-enum TaskStatus {
-  BACKLOG
-  TODO
-  IN_PROGRESS
-  IN_REVIEW
-  DONE
-  CANCELLED
-}
-
-enum TaskPriority {
-  URGENT
-  HIGH
-  MEDIUM
-  LOW
-  NONE
 }
 
 model TaskAssignment {
@@ -341,7 +303,7 @@ model TaskLabel {
 
 model Comment {
   id        String   @id @default(cuid())
-  body      String   @db.Text
+  body      String
   taskId    String
   authorId  String
   parentId  String?
@@ -370,34 +332,19 @@ model CommentReaction {
 }
 
 model TaskActivity {
-  id        String       @id @default(cuid())
-  type      ActivityType
+  id        String   @id @default(cuid())
+  type      String
   field     String?
   oldValue  String?
   newValue  String?
   taskId    String
   userId    String
-  createdAt DateTime     @default(now())
+  createdAt DateTime @default(now())
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id])
 
   @@index([taskId])
-}
-
-enum ActivityType {
-  CREATED
-  UPDATED
-  STATUS_CHANGED
-  ASSIGNED
-  UNASSIGNED
-  COMMENTED
-  ATTACHED
-  COMPLETED
-  REOPENED
-  MOVED
-  LABEL_ADDED
-  LABEL_REMOVED
 }
 
 // ─────────────────────────────────────────────
@@ -427,18 +374,18 @@ model TimeEntry {
 // ─────────────────────────────────────────────
 
 model Goal {
-  id             String     @id @default(cuid())
+  id             String   @id @default(cuid())
   title          String
-  description    String?    @db.Text
-  status         GoalStatus @default(ON_TRACK)
-  period         GoalPeriod @default(QUARTER)
+  description    String?
+  status         String   @default("ON_TRACK")
+  period         String   @default("QUARTER")
   startDate      DateTime
   endDate        DateTime
   organizationId String
   createdBy      String
   parentId       String?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   creator      User          @relation("GoalCreator", fields: [createdBy], references: [id])
@@ -450,56 +397,32 @@ model Goal {
   @@index([organizationId])
 }
 
-enum GoalStatus {
-  ON_TRACK
-  AT_RISK
-  OFF_TRACK
-  ACHIEVED
-  DROPPED
-  PENDING
-}
-
-enum GoalPeriod {
-  MONTH
-  QUARTER
-  HALF_YEAR
-  YEAR
-  CUSTOM
-}
-
 model KeyResult {
-  id           String        @id @default(cuid())
+  id           String   @id @default(cuid())
   title        String
-  type         KeyResultType @default(NUMERIC)
-  startValue   Float         @default(0)
-  targetValue  Float         @default(100)
-  currentValue Float         @default(0)
+  type         String   @default("NUMERIC")
+  startValue   Float    @default(0)
+  targetValue  Float    @default(100)
+  currentValue Float    @default(0)
   unit         String?
-  status       GoalStatus    @default(ON_TRACK)
+  status       String   @default("ON_TRACK")
   goalId       String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
 
   @@index([goalId])
 }
 
-enum KeyResultType {
-  NUMERIC
-  PERCENTAGE
-  CURRENCY
-  BINARY
-}
-
 model GoalCheckIn {
-  id        String     @id @default(cuid())
-  note      String?    @db.Text
-  status    GoalStatus
+  id        String   @id @default(cuid())
+  note      String?
+  status    String
   progress  Float?
   goalId    String
   userId    String
-  createdAt DateTime   @default(now())
+  createdAt DateTime @default(now())
 
   goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id])
@@ -542,34 +465,21 @@ model PortfolioProject {
 // ─────────────────────────────────────────────
 
 model Notification {
-  id        String           @id @default(cuid())
-  type      NotificationType
+  id        String   @id @default(cuid())
+  type      String
   title     String
   body      String?
   link      String?
-  read      Boolean          @default(false)
-  archived  Boolean          @default(false)
+  read      Boolean  @default(false)
+  archived  Boolean  @default(false)
   userId    String
   orgId     String
-  createdAt DateTime         @default(now())
+  createdAt DateTime @default(now())
 
   user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@index([userId, read])
-}
-
-enum NotificationType {
-  TASK_ASSIGNED
-  TASK_COMPLETED
-  TASK_COMMENT
-  TASK_MENTION
-  TASK_DUE_SOON
-  TASK_OVERDUE
-  PROJECT_STATUS_UPDATE
-  GOAL_CHECK_IN
-  MEMBER_INVITED
-  SYSTEM
 }
 
 // ─────────────────────────────────────────────
@@ -579,7 +489,7 @@ enum NotificationType {
 model Page {
   id             String   @id @default(cuid())
   title          String
-  content        Json?
+  content        String?
   icon           String?
   isPublic       Boolean  @default(false)
   organizationId String
@@ -600,7 +510,7 @@ model Page {
 
 model PageComment {
   id        String   @id @default(cuid())
-  body      String   @db.Text
+  body      String
   pageId    String
   authorId  String
   createdAt DateTime @default(now())
@@ -614,7 +524,7 @@ model PageComment {
 model PageVersion {
   id        String   @id @default(cuid())
   title     String
-  content   Json?
+  content   String?
   pageId    String
   userId    String
   createdAt DateTime @default(now())
@@ -635,7 +545,6 @@ model Badge {
   description    String
   icon           String
   xpReward       Int      @default(0)
-  criteria       Json?
   organizationId String
   createdAt      DateTime @default(now())
 

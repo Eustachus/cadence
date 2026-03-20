@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,9 +44,9 @@ import {
   Minus,
   Loader2,
 } from "lucide-react";
-import { getGoals, createGoal, updateGoal, deleteGoal, updateKeyResult } from "@/actions/goals";
+import { getGoals, createGoal, deleteGoal, updateKeyResult } from "@/actions/goals";
 import { GOAL_STATUSES } from "@/lib/constants";
-import { formatDate, cn } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface KeyResult {

@@ -17,7 +17,6 @@ import {
   Plus,
   ArrowRight,
   Building2,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { getOrganizations } from "@/actions/organizations";

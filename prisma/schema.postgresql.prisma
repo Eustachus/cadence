@@ -115,15 +115,15 @@ model Organization {
 }
 
 model Membership {
-  id             String    @id @default(cuid())
+  id             String     @id @default(cuid())
   role           MemberRole @default(MEMBER)
   userId         String
   organizationId String
   invitedEmail   String?
-  inviteToken    String?   @unique
+  inviteToken    String?    @unique
   inviteExpires  DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -204,10 +204,10 @@ model Project {
   team         Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
   creator      User         @relation(fields: [createdBy], references: [id])
 
-  tasks            Task[]
-  sections         Section[]
-  labels           Label[]
-  portfolios       PortfolioProject[]
+  tasks      Task[]
+  sections   Section[]
+  labels     Label[]
+  portfolios PortfolioProject[]
 
   @@index([organizationId])
   @@index([status])
@@ -222,9 +222,9 @@ enum ProjectStatus {
 }
 
 model Section {
-  id        String  @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
-  position  Float   @default(0)
+  position  Float    @default(0)
   projectId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -320,6 +320,8 @@ model Label {
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   tasks        TaskLabel[]
+  Project      Project?     @relation(fields: [projectId], references: [id])
+  projectId    String?
 
   @@unique([name, organizationId])
 }
@@ -327,8 +329,8 @@ model Label {
 model TaskLabel {
   taskId  String
   labelId String
-  task    Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  label   Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  task    Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
 
   @@id([taskId, labelId])
 }
@@ -368,14 +370,14 @@ model CommentReaction {
 }
 
 model TaskActivity {
-  id        String        @id @default(cuid())
+  id        String       @id @default(cuid())
   type      ActivityType
   field     String?
   oldValue  String?
   newValue  String?
   taskId    String
   userId    String
-  createdAt DateTime      @default(now())
+  createdAt DateTime     @default(now())
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id])
@@ -466,17 +468,17 @@ enum GoalPeriod {
 }
 
 model KeyResult {
-  id           String       @id @default(cuid())
+  id           String        @id @default(cuid())
   title        String
   type         KeyResultType @default(NUMERIC)
-  startValue   Float        @default(0)
-  targetValue  Float        @default(100)
-  currentValue Float        @default(0)
+  startValue   Float         @default(0)
+  targetValue  Float         @default(100)
+  currentValue Float         @default(0)
   unit         String?
-  status       GoalStatus   @default(ON_TRACK)
+  status       GoalStatus    @default(ON_TRACK)
   goalId       String
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
 
@@ -491,13 +493,13 @@ enum KeyResultType {
 }
 
 model GoalCheckIn {
-  id        String   @id @default(cuid())
-  note      String?  @db.Text
+  id        String     @id @default(cuid())
+  note      String?    @db.Text
   status    GoalStatus
   progress  Float?
   goalId    String
   userId    String
-  createdAt DateTime @default(now())
+  createdAt DateTime   @default(now())
 
   goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id])
@@ -540,16 +542,16 @@ model PortfolioProject {
 // ─────────────────────────────────────────────
 
 model Notification {
-  id        String   @id @default(cuid())
+  id        String           @id @default(cuid())
   type      NotificationType
   title     String
   body      String?
   link      String?
-  read      Boolean  @default(false)
-  archived  Boolean  @default(false)
+  read      Boolean          @default(false)
+  archived  Boolean          @default(false)
   userId    String
   orgId     String
-  createdAt DateTime @default(now())
+  createdAt DateTime         @default(now())
 
   user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)

@@ -256,8 +256,10 @@ async function main() {
   ];
 
   for (const badge of badges) {
-    await prisma.badge.create({
-      data: { ...badge, organizationId: org.id },
+    await prisma.badge.upsert({
+      where: { name_organizationId: { name: badge.name, organizationId: org.id } },
+      update: {},
+      create: { ...badge, organizationId: org.id },
     });
   }
 
