@@ -219,6 +219,33 @@ export function Sidebar({ organizations = [], currentOrgId }: SidebarProps) {
                 );
               })}
             </nav>
+
+            {/* Recent Projects */}
+            {!sidebarCollapsed && (
+              <>
+                <Separator className="my-3" />
+                <div className="flex items-center justify-between px-3 py-1">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Recent Projects
+                  </span>
+                  <Link href={`/dashboard/${currentOrgId}/projects`}>
+                    <Button variant="ghost" size="icon" className="h-5 w-5">
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </Link>
+                </div>
+                <nav className="space-y-1">
+                  {/* These would be dynamically loaded */}
+                  <Link
+                    href={`/dashboard/${currentOrgId}/projects`}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  >
+                    <FolderKanban className="h-4 w-4" />
+                    View all projects
+                  </Link>
+                </nav>
+              </>
+            )}
           </>
         )}
       </ScrollArea>
