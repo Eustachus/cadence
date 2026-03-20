@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginInput } from "@/lib/validations";
-import { loginAction } from "@/actions/auth";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,25 +11,29 @@ import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 
 export function LoginForm() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-  });
-
-  async function onSubmit(data: LoginInput) {
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await loginAction(data);
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
       if (result?.error) {
-        setError(result.error);
+        setError("Invalid email or password");
+      } else {
+        router.push("/dashboard");
+        router.refresh();
       }
     } catch {
       setError("Something went wrong");
@@ -55,7 +57,7 @@ export function LoginForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4">
         {error && (
           <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
             {error}
@@ -69,11 +71,10 @@ export function LoginForm() {
             type="email"
             placeholder="name@example.com"
             disabled={isLoading}
-            {...register("email")}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
-          )}
         </div>
 
         <div className="space-y-2">
@@ -91,13 +92,10 @@ export function LoginForm() {
             type="password"
             placeholder="Enter your password"
             disabled={isLoading}
-            {...register("password")}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
           />
-          {errors.password && (
-            <p className="text-sm text-destructive">
-              {errors.password.message}
-            </p>
-          )}
         </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>

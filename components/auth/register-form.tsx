@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { registerSchema, type RegisterInput } from "@/lib/validations";
-import { registerAction } from "@/actions/auth";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import bcrypt from "bcryptjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,25 +12,59 @@ import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 
 export function RegisterForm() {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<RegisterInput>({
-    resolver: zodResolver(registerSchema),
-  });
-
-  async function onSubmit(data: RegisterInput) {
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
     setIsLoading(true);
     setError(null);
 
+    // Validate
+    if (name.length < 2) {
+      setError("Name must be at least 2 characters");
+      setIsLoading(false);
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const result = await registerAction(data);
+      // Call register API
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Registration failed");
+        setIsLoading(false);
+        return;
+      }
+
+      // Auto sign in after registration
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
       if (result?.error) {
-        setError(result.error);
+        setError("Account created but sign-in failed. Please sign in manually.");
+        router.push("/sign-in");
+      } else {
+        router.push("/dashboard");
+        router.refresh();
       }
     } catch {
       setError("Something went wrong");
@@ -55,7 +88,7 @@ export function RegisterForm() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4">
         {error && (
           <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
             {error}
@@ -69,11 +102,10 @@ export function RegisterForm() {
             type="text"
             placeholder="John Doe"
             disabled={isLoading}
-            {...register("name")}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
           />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name.message}</p>
-          )}
         </div>
 
         <div className="space-y-2">
@@ -83,11 +115,10 @@ export function RegisterForm() {
             type="email"
             placeholder="name@example.com"
             disabled={isLoading}
-            {...register("email")}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
-          {errors.email && (
-            <p className="text-sm text-destructive">{errors.email.message}</p>
-          )}
         </div>
 
         <div className="space-y-2">
@@ -95,15 +126,13 @@ export function RegisterForm() {
           <Input
             id="password"
             type="password"
-            placeholder="Create a password"
+            placeholder="Create a password (min 8 characters)"
             disabled={isLoading}
-            {...register("password")}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
           />
-          {errors.password && (
-            <p className="text-sm text-destructive">
-              {errors.password.message}
-            </p>
-          )}
         </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>

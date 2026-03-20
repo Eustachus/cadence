@@ -6,11 +6,14 @@ const authRoutes = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
-  // Get session token from cookies
-  const sessionToken = request.cookies.get("authjs.session-token")?.value ||
-                       request.cookies.get("__Secure-authjs.session-token")?.value;
-  
+
+  // Check for session token in cookies (NextAuth uses different cookie names)
+  const sessionToken =
+    request.cookies.get("next-auth.session-token")?.value ||
+    request.cookies.get("__Secure-next-auth.session-token")?.value ||
+    request.cookies.get("authjs.session-token")?.value ||
+    request.cookies.get("__Secure-authjs.session-token")?.value;
+
   const isLoggedIn = !!sessionToken;
 
   const isProtected = protectedRoutes.some((route) =>
