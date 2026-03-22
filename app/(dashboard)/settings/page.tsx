@@ -1,13 +1,55 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
+import {
+  User,
+  Bell,
+  Palette,
+  Shield,
+  CreditCard,
+  Plug,
+  ChevronRight,
+} from "lucide-react";
+
+const settingsLinks = [
+  {
+    href: "/settings/profile",
+    title: "Profile",
+    description: "Manage your personal information and avatar",
+    icon: User,
+  },
+  {
+    href: "/settings/notifications",
+    title: "Notifications",
+    description: "Configure email, push, and in-app notifications",
+    icon: Bell,
+  },
+  {
+    href: "/settings/appearance",
+    title: "Appearance",
+    description: "Customize theme, density, and accent color",
+    icon: Palette,
+  },
+  {
+    href: "/settings/security",
+    title: "Security",
+    description: "Password, two-factor authentication, sessions",
+    icon: Shield,
+  },
+  {
+    href: "/settings/billing",
+    title: "Billing",
+    description: "Manage subscription and payment methods",
+    icon: CreditCard,
+  },
+  {
+    href: "/settings/integrations",
+    title: "Integrations",
+    description: "Connect with external services",
+    icon: Plug,
+  },
+];
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -22,134 +64,49 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="account">Account</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="appearance">Appearance</TabsTrigger>
-        </TabsList>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {settingsLinks.map((link) => (
+          <Link key={link.href} href={link.href}>
+            <Card className="transition-shadow hover:shadow-md cursor-pointer h-full">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                      <link.icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base">{link.title}</CardTitle>
+                      <CardDescription className="mt-0.5 text-xs">
+                        {link.description}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground mt-1" />
+                </div>
+              </CardHeader>
+            </Card>
+          </Link>
+        ))}
+      </div>
 
-        <TabsContent value="profile">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile</CardTitle>
-              <CardDescription>
-                Update your personal information.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" defaultValue={session.user.name ?? ""} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" defaultValue={session.user.email ?? ""} disabled />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea id="bio" placeholder="Tell us about yourself" />
-              </div>
-              <Button>Save changes</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="account">
-          <Card>
-            <CardHeader>
-              <CardTitle>Account</CardTitle>
-              <CardDescription>
-                Manage your account settings.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
-                <Input id="timezone" defaultValue="UTC" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Input id="language" defaultValue="English" />
-              </div>
-              <Button>Save changes</Button>
-            </CardContent>
-          </Card>
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle className="text-destructive">Danger Zone</CardTitle>
-              <CardDescription>
-                Irreversible actions for your account.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="destructive">Delete account</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notifications</CardTitle>
-              <CardDescription>
-                Configure how you receive notifications.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive notifications via email
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Push notifications</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Receive push notifications in browser
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Task reminders</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Get reminded about upcoming deadlines
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              <Button>Save preferences</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="appearance">
-          <Card>
-            <CardHeader>
-              <CardTitle>Appearance</CardTitle>
-              <CardDescription>
-                Customize the look and feel.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Use the theme toggle in the top bar to switch between light, dark, and system themes.
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Quick Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Account Info</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-sm text-muted-foreground">Name</p>
+              <p className="font-medium">{session.user.name || "Not set"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Email</p>
+              <p className="font-medium">{session.user.email}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
