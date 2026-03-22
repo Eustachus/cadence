@@ -1,36 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const protectedRoutes = ["/dashboard", "/my-tasks", "/inbox", "/settings"];
-const authRoutes = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password"];
-
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Check for session token in cookies (NextAuth uses different cookie names)
-  const sessionToken =
-    request.cookies.get("next-auth.session-token")?.value ||
-    request.cookies.get("__Secure-next-auth.session-token")?.value ||
-    request.cookies.get("authjs.session-token")?.value ||
-    request.cookies.get("__Secure-authjs.session-token")?.value;
-
-  const isLoggedIn = !!sessionToken;
-
-  const isProtected = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-  const isAuthRoute = authRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  if (isAuthRoute && isLoggedIn) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  if (isProtected && !isLoggedIn) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
-  }
-
+  // Just pass through all requests - let client-side handle auth
   return NextResponse.next();
 }
 

@@ -1,5 +1,3 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -8,7 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle2,
   Clock,
@@ -19,14 +16,8 @@ import {
   Building2,
 } from "lucide-react";
 import Link from "next/link";
-import { getOrganizations } from "@/actions/organizations";
 
-export default async function DashboardPage() {
-  const session = await auth();
-  if (!session?.user) redirect("/sign-in");
-
-  const organizations = await getOrganizations();
-
+export default function DashboardPage() {
   const stats = [
     {
       title: "Total Tasks",
@@ -63,72 +54,28 @@ export default async function DashboardPage() {
       {/* Welcome */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back{session.user.name ? `, ${session.user.name}` : ""}!
+          Welcome back!
         </h1>
         <p className="text-muted-foreground">
           Here&apos;s what&apos;s happening with your projects today.
         </p>
       </div>
 
-      {/* Workspaces */}
-      {organizations.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Your Workspaces</CardTitle>
-                <CardDescription>
-                  Select a workspace to manage projects and teams.
-                </CardDescription>
-              </div>
-              <Link href="/dashboard/new">
-                <Button size="sm" variant="outline">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {organizations.map((org: typeof organizations[number]) => (
-                <Link key={org.id} href={`/dashboard/${org.id}`}>
-                  <div className="flex items-center gap-3 rounded-lg border p-4 transition-colors hover:bg-muted/50">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <Building2 className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="truncate font-medium">{org.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        /{org.slug}
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="shrink-0">
-                      {org.role}
-                    </Badge>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <Building2 className="mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="text-lg font-semibold">No workspaces yet</h3>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Create a workspace to get started with Cadence.
-            </p>
-            <Link href="/dashboard/new">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Workspace
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      )}
+      {/* Quick Actions */}
+      <div className="flex gap-3">
+        <Link href="/dashboard/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Workspace
+          </Button>
+        </Link>
+        <Link href="/my-tasks">
+          <Button variant="outline">
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+            My Tasks
+          </Button>
+        </Link>
+      </div>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -150,7 +97,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions Card */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
